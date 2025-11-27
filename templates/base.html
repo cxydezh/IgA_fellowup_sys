@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}IgA肾病随访系统{% endblock %}</title>
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='cdnjs/all.min.css') }}" rel="stylesheet">
+    <style>
+        body {
+            font-family: "Microsoft YaHei", "SimHei", Arial, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .navbar {
+            background-color: #2c3e50;
+        }
+        .navbar-brand {
+            font-weight: bold;
+            color: #fff !important;
+        }
+        .sidebar {
+            min-height: calc(100vh - 56px);
+            background-color: #34495e;
+            padding: 20px 0;
+        }
+        .sidebar .nav-link {
+            color: #ecf0f1;
+            padding: 12px 20px;
+            border-left: 3px solid transparent;
+        }
+        .sidebar .nav-link:hover {
+            background-color: #2c3e50;
+            border-left-color: #3498db;
+            color: #fff;
+        }
+        .sidebar .nav-link.active {
+            background-color: #2c3e50;
+            border-left-color: #3498db;
+            color: #fff;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .card-header {
+            background-color: #3498db;
+            color: #fff;
+            font-weight: bold;
+        }
+        .btn-primary {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+        .btn-primary:hover {
+            background-color: #2980b9;
+            border-color: #2980b9;
+        }
+        .table th {
+            background-color: #ecf0f1;
+            font-weight: bold;
+        }
+        .alert {
+            border-radius: 4px;
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% if current_user.is_authenticated %}
+    <nav class="navbar navbar-dark navbar-expand-lg">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{{ url_for('dashboard') }}">
+                <i class="fas fa-heartbeat"></i> IgA肾病随访系统
+            </a>
+            <div class="navbar-nav ms-auto">
+                <span class="navbar-text text-white me-3">
+                    <i class="fas fa-user"></i> {{ current_user.real_name }} ({{ current_user.role }})
+                </span>
+                <a class="nav-link text-white" href="{{ url_for('logout') }}">
+                    <i class="fas fa-sign-out-alt"></i> 退出
+                </a>
+            </div>
+        </div>
+    </nav>
+    {% endif %}
+
+    <div class="container-fluid">
+        <div class="row">
+            {% if current_user.is_authenticated %}
+            <div class="col-md-2 sidebar">
+                <nav class="nav flex-column">
+                    <a class="nav-link {% if request.endpoint == 'dashboard' %}active{% endif %}" href="{{ url_for('dashboard') }}">
+                        <i class="fas fa-home"></i> 首页
+                    </a>
+                    <a class="nav-link {% if request.endpoint in ['patients', 'add_patient', 'edit_patient', 'patient_detail'] %}active{% endif %}" href="{{ url_for('patients') }}">
+                        <i class="fas fa-user-injured"></i> 患者管理
+                    </a>
+                    <a class="nav-link {% if request.endpoint in ['records', 'add_record', 'edit_record', 'record_detail'] %}active{% endif %}" href="{{ url_for('records') }}">
+                        <i class="fas fa-clipboard-list"></i> 随访记录
+                    </a>
+                    {% if current_user.role == 'admin' %}
+                    <a class="nav-link {% if request.endpoint == 'staff' or request.endpoint in ['add_staff', 'edit_staff'] %}active{% endif %}" href="{{ url_for('staff') }}">
+                        <i class="fas fa-users"></i> 工作人员管理
+                    </a>
+                    <a class="nav-link {% if request.endpoint == 'settings' %}active{% endif %}" href="{{ url_for('settings') }}">
+                        <i class="fas fa-cog"></i> 系统设置
+                    </a>
+                    {% endif %}
+                </nav>
+            </div>
+            <div class="col-md-10 main-content">
+            {% else %}
+            <div class="col-12">
+            {% endif %}
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="alert alert-{{ 'danger' if category == 'error' else 'success' if category == 'success' else 'info' }} alert-dismissible fade show" role="alert">
+                                {{ message }}
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>
+

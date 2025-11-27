@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '编辑患者' if patient else '添加患者' }} - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-injured"></i> {{ '编辑患者' if patient else '添加患者' }}</h2>
+    <a href="{{ url_for('patients') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-edit"></i> {{ '编辑患者信息' if patient else '添加新患者' }}
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('edit_patient', patient_id=patient.id) if patient else url_for('add_patient') }}">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="patient_id" class="form-label">患者编号 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="patient_id" name="patient_id" 
+                           value="{{ patient.patient_id if patient else '' }}" 
+                           {{ 'readonly' if patient else '' }} required>
+                    {% if not patient %}
+                    <small class="form-text text-muted">系统将自动生成患者编号</small>
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="name" class="form-label">姓名 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="name" name="name" 
+                           value="{{ patient.name if patient else '' }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="gender" class="form-label">性别 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="gender" name="gender" required>
+                        <option value="">请选择</option>
+                        <option value="男" {{ 'selected' if patient and patient.gender == '男' else '' }}>男</option>
+                        <option value="女" {{ 'selected' if patient and patient.gender == '女' else '' }}>女</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="birth_date" class="form-label">出生日期</label>
+                    <input type="date" class="form-control" id="birth_date" name="birth_date" 
+                           value="{{ patient.birth_date.strftime('%Y-%m-%d') if patient and patient.birth_date else '' }}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="age" class="form-label">年龄</label>
+                    <input type="number" class="form-control" id="age" name="age" 
+                           value="{{ patient.age if patient else '' }}" min="0" max="150">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="id_card" class="form-label">身份证号</label>
+                    <input type="text" class="form-control" id="id_card" name="id_card" 
+                           value="{{ patient.id_card if patient else '' }}" maxlength="18">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">联系电话</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" 
+                           value="{{ patient.phone if patient else '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="diagnosis_date" class="form-label">确诊日期</label>
+                    <input type="date" class="form-control" id="diagnosis_date" name="diagnosis_date" 
+                           value="{{ patient.diagnosis_date.strftime('%Y-%m-%d') if patient and patient.diagnosis_date else '' }}">
+                </div>
+            </div>
+
+            <div class="mb-3">
+                <label for="address" class="form-label">地址</label>
+                <textarea class="form-control" id="address" name="address" rows="2">{{ patient.address if patient else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="diagnosis" class="form-label">诊断</label>
+                <textarea class="form-control" id="diagnosis" name="diagnosis" rows="2">{{ patient.diagnosis if patient else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="initial_symptoms" class="form-label">初始症状</label>
+                <textarea class="form-control" id="initial_symptoms" name="initial_symptoms" rows="2">{{ patient.initial_symptoms if patient else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="comorbidities" class="form-label">合并症</label>
+                <textarea class="form-control" id="comorbidities" name="comorbidities" rows="2">{{ patient.comorbidities if patient else '' }}</textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="family_history" class="form-label">家族史</label>
+                <textarea class="form-control" id="family_history" name="family_history" rows="2">{{ patient.family_history if patient else '' }}</textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('patients') }}" class="btn btn-secondary me-2">取消</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 自动计算年龄
+    document.getElementById('birth_date').addEventListener('change', function() {
+        const birthDate = new Date(this.value);
+        if (birthDate && !isNaN(birthDate.getTime())) {
+            const today = new Date();
+            let age = today.getFullYear() - birthDate.getFullYear();
+            const monthDiff = today.getMonth() - birthDate.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+                age--;
+            }
+            document.getElementById('age').value = age;
+        }
+    });
+</script>
+{% endblock %}
+

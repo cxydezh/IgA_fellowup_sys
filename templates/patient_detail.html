@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}患者详情 - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-injured"></i> 患者详情</h2>
+    <div>
+        <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-warning me-2">
+            <i class="fas fa-edit"></i> 编辑患者
+        </a>
+        <a href="{{ url_for('add_record', patient_id=patient.id) }}" class="btn btn-success me-2">
+            <i class="fas fa-plus"></i> 添加随访记录
+        </a>
+        <a href="{{ url_for('patients') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 基本信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="30%">患者编号：</th>
+                        <td>{{ patient.patient_id }}</td>
+                    </tr>
+                    <tr>
+                        <th>姓名：</th>
+                        <td>{{ patient.name }}</td>
+                    </tr>
+                    <tr>
+                        <th>性别：</th>
+                        <td>{{ patient.gender }}</td>
+                    </tr>
+                    <tr>
+                        <th>年龄：</th>
+                        <td>{{ patient.age or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>出生日期：</th>
+                        <td>{{ patient.birth_date.strftime('%Y-%m-%d') if patient.birth_date else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>身份证号：</th>
+                        <td>{{ patient.id_card or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>联系电话：</th>
+                        <td>{{ patient.phone or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>地址：</th>
+                        <td>{{ patient.address or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-stethoscope"></i> 诊断信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="30%">诊断：</th>
+                        <td>{{ patient.diagnosis or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>确诊日期：</th>
+                        <td>{{ patient.diagnosis_date.strftime('%Y-%m-%d') if patient.diagnosis_date else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>初始症状：</th>
+                        <td>{{ patient.initial_symptoms or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>合并症：</th>
+                        <td>{{ patient.comorbidities or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>家族史：</th>
+                        <td>{{ patient.family_history or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>创建时间：</th>
+                        <td>{{ patient.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                    <tr>
+                        <th>创建人：</th>
+                        <td>{{ patient.creator.real_name if patient.creator else '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-clipboard-list"></i> 随访记录 (共 {{ records|length }} 条)
+    </div>
+    <div class="card-body">
+        {% if records %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>随访日期</th>
+                        <th>随访类型</th>
+                        <th>症状</th>
+                        <th>血压</th>
+                        <th>血肌酐</th>
+                        <th>eGFR</th>
+                        <th>记录人</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for record in records %}
+                    <tr>
+                        <td>{{ record.followup_date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ record.followup_type or '-' }}</td>
+                        <td>{{ record.symptoms[:20] + '...' if record.symptoms and record.symptoms|length > 20 else (record.symptoms or '-') }}</td>
+                        <td>{{ record.blood_pressure or '-' }}</td>
+                        <td>{{ record.serum_creatinine or '-' }}</td>
+                        <td>{{ record.egfr or '-' }}</td>
+                        <td>{{ record.recorder.real_name if record.recorder else '-' }}</td>
+                        <td>
+                            <a href="{{ url_for('record_detail', record_id=record.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-eye"></i> 查看
+                            </a>
+                            <a href="{{ url_for('edit_record', record_id=record.id) }}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-edit"></i> 编辑
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">暂无随访记录</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

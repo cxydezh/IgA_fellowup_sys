@@ -1,0 +1,205 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '编辑随访记录' if record else '添加随访记录' }} - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-clipboard-list"></i> {{ '编辑随访记录' if record else '添加随访记录' }}</h2>
+    <a href="{{ url_for('records') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-edit"></i> {{ '编辑随访记录' if record else '添加新随访记录' }}
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('edit_record', record_id=record.id) if record else url_for('add_record') }}">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="patient_id" class="form-label">患者 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="patient_id" name="patient_id" required {{ 'disabled' if record else '' }}>
+                        <option value="">请选择患者</option>
+                        {% for p in patients %}
+                        <option value="{{ p.id }}" {{ 'selected' if (record and record.patient_id == p.id) or (patient_id and patient_id == p.id) else '' }}>
+                            {{ p.patient_id }} - {{ p.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                    {% if record %}
+                    <input type="hidden" name="patient_id" value="{{ record.patient_id }}">
+                    {% endif %}
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="followup_date" class="form-label">随访日期 <span class="text-danger">*</span></label>
+                    <input type="date" class="form-control" id="followup_date" name="followup_date" 
+                           value="{{ record.followup_date.strftime('%Y-%m-%d') if record else '' }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="followup_type" class="form-label">随访类型</label>
+                    <select class="form-select" id="followup_type" name="followup_type">
+                        <option value="">请选择</option>
+                        <option value="门诊" {{ 'selected' if record and record.followup_type == '门诊' else '' }}>门诊</option>
+                        <option value="电话" {{ 'selected' if record and record.followup_type == '电话' else '' }}>电话</option>
+                        <option value="住院" {{ 'selected' if record and record.followup_type == '住院' else '' }}>住院</option>
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="next_followup_date" class="form-label">下次随访日期</label>
+                    <input type="date" class="form-control" id="next_followup_date" name="next_followup_date" 
+                           value="{{ record.next_followup_date.strftime('%Y-%m-%d') if record and record.next_followup_date else '' }}">
+                </div>
+            </div>
+
+            <hr>
+            <h5 class="mb-3"><i class="fas fa-heartbeat"></i> 症状和体征</h5>
+            <div class="row">
+                <div class="col-md-12 mb-3">
+                    <label for="symptoms" class="form-label">症状</label>
+                    <textarea class="form-control" id="symptoms" name="symptoms" rows="2">{{ record.symptoms if record else '' }}</textarea>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="blood_pressure" class="form-label">血压</label>
+                    <input type="text" class="form-control" id="blood_pressure" name="blood_pressure" 
+                           placeholder="如：120/80" value="{{ record.blood_pressure if record else '' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="heart_rate" class="form-label">心率 (次/分)</label>
+                    <input type="number" class="form-control" id="heart_rate" name="heart_rate" 
+                           value="{{ record.heart_rate if record else '' }}" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="body_weight" class="form-label">体重 (kg)</label>
+                    <input type="number" class="form-control" id="body_weight" name="body_weight" 
+                           value="{{ record.body_weight if record else '' }}" step="0.1" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="height" class="form-label">身高 (cm)</label>
+                    <input type="number" class="form-control" id="height" name="height" 
+                           value="{{ record.height if record else '' }}" step="0.1" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="bmi" class="form-label">BMI</label>
+                    <input type="number" class="form-control" id="bmi" name="bmi" 
+                           value="{{ record.bmi if record else '' }}" step="0.1" min="0" readonly>
+                    <small class="form-text text-muted">自动计算</small>
+                </div>
+            </div>
+
+            <hr>
+            <h5 class="mb-3"><i class="fas fa-flask"></i> 实验室检查</h5>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="urine_protein" class="form-label">尿蛋白</label>
+                    <input type="text" class="form-control" id="urine_protein" name="urine_protein" 
+                           value="{{ record.urine_protein if record else '' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="urine_rbc" class="form-label">尿红细胞</label>
+                    <input type="text" class="form-control" id="urine_rbc" name="urine_rbc" 
+                           value="{{ record.urine_rbc if record else '' }}">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="urine_protein_24h" class="form-label">24小时尿蛋白 (g/24h)</label>
+                    <input type="number" class="form-control" id="urine_protein_24h" name="urine_protein_24h" 
+                           value="{{ record.urine_protein_24h if record else '' }}" step="0.01" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="urine_protein_creatinine_ratio" class="form-label">尿蛋白肌酐比 (mg/g)</label>
+                    <input type="number" class="form-control" id="urine_protein_creatinine_ratio" name="urine_protein_creatinine_ratio" 
+                           value="{{ record.urine_protein_creatinine_ratio if record else '' }}" step="0.1" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="serum_creatinine" class="form-label">血肌酐 (μmol/L)</label>
+                    <input type="number" class="form-control" id="serum_creatinine" name="serum_creatinine" 
+                           value="{{ record.serum_creatinine if record else '' }}" step="0.1" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="egfr" class="form-label">eGFR (ml/min/1.73m²)</label>
+                    <input type="number" class="form-control" id="egfr" name="egfr" 
+                           value="{{ record.egfr if record else '' }}" step="0.1" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3 mb-3">
+                    <label for="serum_albumin" class="form-label">血清白蛋白 (g/L)</label>
+                    <input type="number" class="form-control" id="serum_albumin" name="serum_albumin" 
+                           value="{{ record.serum_albumin if record else '' }}" step="0.1" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="hemoglobin" class="form-label">血红蛋白 (g/L)</label>
+                    <input type="number" class="form-control" id="hemoglobin" name="hemoglobin" 
+                           value="{{ record.hemoglobin if record else '' }}" step="0.1" min="0">
+                </div>
+                <div class="col-md-3 mb-3">
+                    <label for="iga_level" class="form-label">IgA水平</label>
+                    <input type="number" class="form-control" id="iga_level" name="iga_level" 
+                           value="{{ record.iga_level if record else '' }}" step="0.1" min="0">
+                </div>
+            </div>
+
+            <hr>
+            <h5 class="mb-3"><i class="fas fa-pills"></i> 用药情况</h5>
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="medications" class="form-label">用药情况</label>
+                    <textarea class="form-control" id="medications" name="medications" rows="2">{{ record.medications if record else '' }}</textarea>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="medication_compliance" class="form-label">用药依从性</label>
+                    <select class="form-select" id="medication_compliance" name="medication_compliance">
+                        <option value="">请选择</option>
+                        <option value="良好" {{ 'selected' if record and record.medication_compliance == '良好' else '' }}>良好</option>
+                        <option value="一般" {{ 'selected' if record and record.medication_compliance == '一般' else '' }}>一般</option>
+                        <option value="差" {{ 'selected' if record and record.medication_compliance == '差' else '' }}>差</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr>
+            <div class="mb-3">
+                <label for="notes" class="form-label">备注</label>
+                <textarea class="form-control" id="notes" name="notes" rows="3">{{ record.notes if record else '' }}</textarea>
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('records') }}" class="btn btn-secondary me-2">取消</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 自动计算BMI
+    function calculateBMI() {
+        const weight = parseFloat(document.getElementById('body_weight').value);
+        const height = parseFloat(document.getElementById('height').value);
+        if (weight && height && height > 0) {
+            const heightInMeters = height / 100;
+            const bmi = weight / (heightInMeters * heightInMeters);
+            document.getElementById('bmi').value = bmi.toFixed(2);
+        } else {
+            document.getElementById('bmi').value = '';
+        }
+    }
+    
+    document.getElementById('body_weight').addEventListener('input', calculateBMI);
+    document.getElementById('height').addEventListener('input', calculateBMI);
+</script>
+{% endblock %}
+

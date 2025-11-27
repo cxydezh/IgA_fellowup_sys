@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+
+{% block title %}随访记录详情 - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-clipboard-list"></i> 随访记录详情</h2>
+    <div>
+        <a href="{{ url_for('edit_record', record_id=record.id) }}" class="btn btn-warning me-2">
+            <i class="fas fa-edit"></i> 编辑记录
+        </a>
+        <a href="{{ url_for('patient_detail', patient_id=record.patient_id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> 返回患者详情
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-info-circle"></i> 基本信息
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">患者：</th>
+                        <td>
+                            <a href="{{ url_for('patient_detail', patient_id=record.patient_id) }}">
+                                {{ record.patient.patient_id }} - {{ record.patient.name }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>随访日期：</th>
+                        <td>{{ record.followup_date.strftime('%Y-%m-%d') }}</td>
+                    </tr>
+                    <tr>
+                        <th>随访类型：</th>
+                        <td>{{ record.followup_type or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>下次随访日期：</th>
+                        <td>
+                            {% if record.next_followup_date %}
+                                <span class="badge bg-warning">{{ record.next_followup_date.strftime('%Y-%m-%d') }}</span>
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>记录人：</th>
+                        <td>{{ record.recorder.real_name if record.recorder else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>记录时间：</th>
+                        <td>{{ record.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-heartbeat"></i> 症状和体征
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">症状：</th>
+                        <td>{{ record.symptoms or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>血压：</th>
+                        <td>{{ record.blood_pressure or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>心率：</th>
+                        <td>{{ record.heart_rate or '-' }} 次/分</td>
+                    </tr>
+                    <tr>
+                        <th>体重：</th>
+                        <td>{{ record.body_weight or '-' }} kg</td>
+                    </tr>
+                    <tr>
+                        <th>身高：</th>
+                        <td>{{ record.height or '-' }} cm</td>
+                    </tr>
+                    <tr>
+                        <th>BMI：</th>
+                        <td>{{ record.bmi or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-flask"></i> 实验室检查
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">尿蛋白：</th>
+                        <td>{{ record.urine_protein or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>尿红细胞：</th>
+                        <td>{{ record.urine_rbc or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>24小时尿蛋白：</th>
+                        <td>{{ record.urine_protein_24h or '-' }}{% if record.urine_protein_24h %} g/24h{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>尿蛋白肌酐比：</th>
+                        <td>{{ record.urine_protein_creatinine_ratio or '-' }}{% if record.urine_protein_creatinine_ratio %} mg/g{% endif %}</td>
+                    </tr>
+                    <tr>
+                        <th>血肌酐：</th>
+                        <td>{{ record.serum_creatinine or '-' }} μmol/L</td>
+                    </tr>
+                    <tr>
+                        <th>eGFR：</th>
+                        <td>{{ record.egfr or '-' }} ml/min/1.73m²</td>
+                    </tr>
+                    <tr>
+                        <th>血清白蛋白：</th>
+                        <td>{{ record.serum_albumin or '-' }} g/L</td>
+                    </tr>
+                    <tr>
+                        <th>血红蛋白：</th>
+                        <td>{{ record.hemoglobin or '-' }} g/L</td>
+                    </tr>
+                    <tr>
+                        <th>IgA水平：</th>
+                        <td>{{ record.iga_level or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <i class="fas fa-pills"></i> 用药情况
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <th width="40%">用药情况：</th>
+                        <td>{{ record.medications or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <th>用药依从性：</th>
+                        <td>
+                            {% if record.medication_compliance %}
+                                {% if record.medication_compliance == '良好' %}
+                                    <span class="badge bg-success">{{ record.medication_compliance }}</span>
+                                {% elif record.medication_compliance == '一般' %}
+                                    <span class="badge bg-warning">{{ record.medication_compliance }}</span>
+                                {% else %}
+                                    <span class="badge bg-danger">{{ record.medication_compliance }}</span>
+                                {% endif %}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if record.notes %}
+<div class="card mt-4">
+    <div class="card-header">
+        <i class="fas fa-sticky-note"></i> 备注
+    </div>
+    <div class="card-body">
+        <p>{{ record.notes }}</p>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

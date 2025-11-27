@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}{{ '编辑工作人员' if staff else '添加工作人员' }} - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-users"></i> {{ '编辑工作人员' if staff else '添加工作人员' }}</h2>
+    <a href="{{ url_for('staff') }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> 返回列表
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-edit"></i> {{ '编辑工作人员信息' if staff else '添加新工作人员' }}
+    </div>
+    <div class="card-body">
+        <form method="POST" action="{{ url_for('edit_staff', staff_id=staff.id) if staff else url_for('add_staff') }}">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="username" name="username" 
+                           value="{{ staff.username if staff else '' }}" required>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="real_name" class="form-label">真实姓名 <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" id="real_name" name="real_name" 
+                           value="{{ staff.real_name if staff else '' }}" required>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="password" class="form-label">
+                        密码 <span class="text-danger">*</span>
+                        {% if staff %}
+                            <small class="text-muted">(留空则不修改)</small>
+                        {% endif %}
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" 
+                           {{ 'required' if not staff else '' }}>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="role" class="form-label">角色 <span class="text-danger">*</span></label>
+                    <select class="form-select" id="role" name="role" required>
+                        <option value="staff" {{ 'selected' if staff and staff.role == 'staff' else '' }}>工作人员</option>
+                        <option value="nurse" {{ 'selected' if staff and staff.role == 'nurse' else '' }}>护士</option>
+                        <option value="doctor" {{ 'selected' if staff and staff.role == 'doctor' else '' }}>医生</option>
+                        <option value="admin" {{ 'selected' if staff and staff.role == 'admin' else '' }}>管理员</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="department" class="form-label">科室</label>
+                    <input type="text" class="form-control" id="department" name="department" 
+                           value="{{ staff.department if staff else '' }}">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label for="phone" class="form-label">联系电话</label>
+                    <input type="tel" class="form-control" id="phone" name="phone" 
+                           value="{{ staff.phone if staff else '' }}">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label for="email" class="form-label">邮箱</label>
+                    <input type="email" class="form-control" id="email" name="email" 
+                           value="{{ staff.email if staff else '' }}">
+                </div>
+                {% if staff %}
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">状态</label>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="is_active" name="is_active" 
+                               {{ 'checked' if staff.is_active else '' }}>
+                        <label class="form-check-label" for="is_active">
+                            激活账户
+                        </label>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="d-flex justify-content-end">
+                <a href="{{ url_for('staff') }}" class="btn btn-secondary me-2">取消</a>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-cog"></i> 系统设置</h2>
+    <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addSettingModal">
+        <i class="fas fa-plus"></i> 添加设置
+    </button>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 系统设置列表
+    </div>
+    <div class="card-body">
+        {% if settings %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>设置键</th>
+                        <th>设置值</th>
+                        <th>描述</th>
+                        <th>更新时间</th>
+                        <th>更新人</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for setting in settings %}
+                    <tr>
+                        <td><strong>{{ setting.key }}</strong></td>
+                        <td>{{ setting.value }}</td>
+                        <td>{{ setting.description or '-' }}</td>
+                        <td>{{ setting.updated_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                        <td>{{ setting.updater.real_name if setting.updater else '-' }}</td>
+                        <td>
+                            <button type="button" class="btn btn-sm btn-warning" 
+                                    onclick="editSetting({{ setting.id }}, '{{ setting.key }}', '{{ setting.value|replace("'", "\\'") }}', '{{ (setting.description or "")|replace("'", "\\'") }}')">
+                                <i class="fas fa-edit"></i> 编辑
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger" 
+                                    onclick="deleteSetting({{ setting.id }})">
+                                <i class="fas fa-trash"></i> 删除
+                            </button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted text-center">暂无系统设置</p>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 添加设置模态框 -->
+<div class="modal fade" id="addSettingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">添加系统设置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="addSettingForm">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="setting_key" class="form-label">设置键 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="setting_key" name="key" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="setting_value" class="form-label">设置值 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="setting_value" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="setting_description" class="form-label">描述</label>
+                        <textarea class="form-control" id="setting_description" name="description" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑设置模态框 -->
+<div class="modal fade" id="editSettingModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">编辑系统设置</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editSettingForm">
+                <input type="hidden" id="edit_setting_id" name="setting_id">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="edit_setting_key" class="form-label">设置键</label>
+                        <input type="text" class="form-control" id="edit_setting_key" readonly>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_setting_value" class="form-label">设置值 <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" id="edit_setting_value" name="value" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="edit_setting_description" class="form-label">描述</label>
+                        <textarea class="form-control" id="edit_setting_description" name="description" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                    <button type="submit" class="btn btn-primary">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // 添加设置
+    document.getElementById('addSettingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        
+        fetch('{{ url_for("add_setting") }}', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('错误：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('发生错误：' + error);
+        });
+    });
+
+    // 编辑设置
+    function editSetting(id, key, value, description) {
+        document.getElementById('edit_setting_id').value = id;
+        document.getElementById('edit_setting_key').value = key;
+        document.getElementById('edit_setting_value').value = value;
+        document.getElementById('edit_setting_description').value = description || '';
+        
+        const modal = new bootstrap.Modal(document.getElementById('editSettingModal'));
+        modal.show();
+    }
+
+    document.getElementById('editSettingForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const settingId = document.getElementById('edit_setting_id').value;
+        
+        fetch(`{{ url_for("update_setting", setting_id=0) }}`.replace('0', settingId), {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('错误：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('发生错误：' + error);
+        });
+    });
+
+    // 删除设置
+    function deleteSetting(id) {
+        if (!confirm('确定要删除此设置吗？')) {
+            return;
+        }
+        
+        const formData = new FormData();
+        
+        fetch(`{{ url_for("delete_setting", setting_id=0) }}`.replace('0', id), {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert(data.message);
+                location.reload();
+            } else {
+                alert('错误：' + data.message);
+            }
+        })
+        .catch(error => {
+            alert('发生错误：' + error);
+        });
+    }
+</script>
+{% endblock %}
+

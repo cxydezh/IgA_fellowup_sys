@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block title %}患者管理 - IgA肾病随访系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2><i class="fas fa-user-injured"></i> 患者管理</h2>
+    <a href="{{ url_for('add_patient') }}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 添加患者
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <i class="fas fa-list"></i> 患者列表
+    </div>
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('patients') }}" class="mb-3">
+            <div class="row">
+                <div class="col-md-8">
+                    <input type="text" class="form-control" name="search" placeholder="搜索患者编号、姓名或电话..." value="{{ search }}">
+                </div>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary me-2">
+                        <i class="fas fa-search"></i> 搜索
+                    </button>
+                    <a href="{{ url_for('patients') }}" class="btn btn-secondary">
+                        <i class="fas fa-redo"></i> 重置
+                    </a>
+                </div>
+            </div>
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th>患者编号</th>
+                        <th>姓名</th>
+                        <th>性别</th>
+                        <th>年龄</th>
+                        <th>联系电话</th>
+                        <th>诊断</th>
+                        <th>创建时间</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% if patients %}
+                        {% for patient in patients %}
+                        <tr>
+                            <td>{{ patient.patient_id }}</td>
+                            <td>{{ patient.name }}</td>
+                            <td>{{ patient.gender }}</td>
+                            <td>{{ patient.age or '-' }}</td>
+                            <td>{{ patient.phone or '-' }}</td>
+                            <td>{{ patient.diagnosis or '-' }}</td>
+                            <td>{{ patient.created_at.strftime('%Y-%m-%d') }}</td>
+                            <td>
+                                <a href="{{ url_for('patient_detail', patient_id=patient.id) }}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> 查看
+                                </a>
+                                <a href="{{ url_for('edit_patient', patient_id=patient.id) }}" class="btn btn-sm btn-warning">
+                                    <i class="fas fa-edit"></i> 编辑
+                                </a>
+                                <form method="POST" action="{{ url_for('delete_patient', patient_id=patient.id) }}" style="display:inline;" onsubmit="return confirm('确定要删除此患者吗？删除后将同时删除所有相关随访记录！');">
+                                    <button type="submit" class="btn btn-sm btn-danger">
+                                        <i class="fas fa-trash"></i> 删除
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% else %}
+                        <tr>
+                            <td colspan="8" class="text-center text-muted">暂无患者数据</td>
+                        </tr>
+                    {% endif %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if pagination.pages > 1 %}
+        <nav aria-label="分页导航">
+            <ul class="pagination justify-content-center">
+                {% if pagination.has_prev %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('patients', page=pagination.prev_num, search=search) }}">上一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">上一页</span>
+                </li>
+                {% endif %}
+
+                {% for page_num in pagination.iter_pages(left_edge=1, right_edge=1, left_current=2, right_current=2) %}
+                    {% if page_num %}
+                        {% if page_num == pagination.page %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ page_num }}</span>
+                        </li>
+                        {% else %}
+                        <li class="page-item">
+                            <a class="page-link" href="{{ url_for('patients', page=page_num, search=search) }}">{{ page_num }}</a>
+                        </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+
+                {% if pagination.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="{{ url_for('patients', page=pagination.next_num, search=search) }}">下一页</a>
+                </li>
+                {% else %}
+                <li class="page-item disabled">
+                    <span class="page-link">下一页</span>
+                </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
